@@ -8,7 +8,7 @@ This is a port of Robert Leslie's [HFS Utilities](https://www.mars.org/home/rob/
 
 * This version is fully Unicode aware, file and directory names are mapped from UTF-8 to MacRoman and v.v.
 
-* copy operations in text mode ("-t") also translate from/to UTF-8. To copy-in text files that are already macroman-encoded, use raw mode("-r") instead.
+* copy operations in text mode ("-t") also translate from/to UTF-8. To copy-in text files that are already macroman-encoded, use raw mode ("-r") instead.
 
 **Python Demo**
 
