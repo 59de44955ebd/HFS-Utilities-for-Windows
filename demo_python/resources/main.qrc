@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="main">
+    <file>icons/up.png</file>
+    <file>icons/app.png</file>
+    <file>icons/refresh.png</file>
+  </qresource>
+</RCC>

@@ -1,0 +1,261 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Quelldateien">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Headerdateien">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Quelldateien\lib">
+      <UniqueIdentifier>{58184444-a47a-4e06-a701-7d748f249cf5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Headerdateien\lib">
+      <UniqueIdentifier>{b9b7f7a2-babb-4ff9-8351-05cec60935a7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\binhex.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\charset.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\copyin.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\copyout.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\crc.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\darray.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dlist.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\dstring.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\glob.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hattrib.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hcd.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hcopy.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hcwd.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hdel.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hformat.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hfsutil.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hls.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hmkdir.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hmount.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hpwd.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hrename.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hrmdir.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\humount.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\hvol.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\suid.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\version.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\hfs.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\block.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\btree.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\data.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\file.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\low.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\medium.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\node.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\os.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\record.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\libhfs\volume.c">
+      <Filter>Quelldateien\lib</Filter>
+    </ClCompile>
+    <ClCompile Include="source\getopt.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="source\charset.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\hfs.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\binhex.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\copyin.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\copyout.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\crc.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\darray.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\dlist.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\dstring.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\getopt.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\glob.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hattrib.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hcd.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hcopy.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hcwd.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hdel.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hformat.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hfsutil.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hls.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hmkdir.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hmount.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hpwd.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hrename.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hrmdir.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\humount.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\hvol.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\suid.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\version.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\apple.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\block.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\btree.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\data.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\file.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\libhfs.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\low.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\medium.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\node.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\os.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\record.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+    <ClInclude Include="source\libhfs\volume.h">
+      <Filter>Headerdateien\lib</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
