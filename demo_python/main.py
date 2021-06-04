@@ -10,6 +10,7 @@ from datetime import date
 import shutil
 import binhex
 import shlex
+import traceback
 IS_WIN = os.name == 'nt'
 if IS_WIN:
     from winreg import *
@@ -628,6 +629,7 @@ class Main(QMainWindow):
 
 
 if __name__ == '__main__':
+    sys.excepthook = traceback.print_exception
     app = QApplication(sys.argv)
     main = Main()
     sys.exit(app.exec_())
