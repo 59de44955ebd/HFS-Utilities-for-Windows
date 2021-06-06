@@ -154,7 +154,7 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy /y $(TargetPath) release\$(Platform)\ &amp;&amp; copy /y $(TargetPath) $(ProjectDir)demo_python\resources\bin\</Command>
+      <Command>copy /y $(TargetPath) release\$(Platform)\ &amp;&amp; copy /y $(TargetPath) $(ProjectDir)demo_python\resources\bin\win\</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

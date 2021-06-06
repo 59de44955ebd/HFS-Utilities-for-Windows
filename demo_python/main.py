@@ -1,7 +1,7 @@
 # ****************************************************************************
 # @file QPyHFSExplorer
 # @author Valentin Schmidt
-# @version 0.1
+# @version 0.2
 # ****************************************************************************
 
 import os
@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import *
 from PyQt5 import uic
 
 APP_NAME = 'QPyHFSExplorer'
-APP_VERSION = 1
+APP_VERSION = 2
 
 APP_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -69,7 +69,8 @@ class Main(QMainWindow):
         self._icon_folder = iconProvider.icon(QFileIconProvider.Folder)
         self._icon_file = iconProvider.icon(QFileIconProvider.File)
 
-        self.loaded_image = None
+        self._loaded_image = None
+        self._last_dir = ''
 
         self._proc = QProcess()
         self._proc.readyReadStandardError.connect(self.slot_stderr)
@@ -117,15 +118,20 @@ class Main(QMainWindow):
         self._proc.waitForFinished()
         if ignore_errors:
             self._proc.readyReadStandardError.connect(self.slot_stderr)
-        res = self._proc.readAllStandardOutput().data().strip().decode()
+        data = self._proc.readAllStandardOutput().data()
+        # needed to handle carriage return in file/directory names
+        data = data.replace(b'\r\n', b'\n').replace(b'\r', b'{CR}')
+        res = data.decode('utf-8').strip('\n')
         if VERBOSE:
             print('[STDOUT]', res)
         return res
 
-    def _sh(self, command):
+    def _sh(self, command, ignore_errors=False):
         ''' run a command, return stdout '''
         if VERBOSE:
             print('[COMMAND]', command)
+        if ignore_errors:
+            command += ' 2>/dev/null'
         if '$(mac' in command:
             command = '-c \'source ./mac.sh;{}\''.format(command)
             self._proc.start('/bin/sh', shlex.split(command))
@@ -133,7 +139,10 @@ class Main(QMainWindow):
             parts = shlex.split(command)
             self._proc.start(parts[0], parts[1:])
         self._proc.waitForFinished()
-        res = self._proc.readAllStandardOutput().data().strip().decode('macroman')
+        # needed to handle carriage return in file/directory names
+        data = self._proc.readAllStandardOutput().data()
+        data = data.replace(b'\r', b'{CR}')
+        res = data.decode('macroman').strip('\n')
         if VERBOSE:
             print('[STDOUT]', res)
         return res
@@ -142,7 +151,7 @@ class Main(QMainWindow):
         ''' parse single line of ls listing '''
         res = {}
         res['type'] = l[0]
-        res['name'] = l[46:]
+        res['name'] = l[46:]#.replace('/', '{SL}')
         m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].index(l[33:36]) + 1
         d = int(l[37:39])
         y = date.today().year if ':' in l[41:45] else int(l[41:45])
@@ -191,7 +200,7 @@ class Main(QMainWindow):
         )
         self.lineEditHfsPath.setText(self._cmd('hfs', ['pwd']) if IS_WIN else self._sh('hpwd'))
         self._show_listing()
-        self.loaded_image = fn
+        self._loaded_image = fn
 
         self.treeWidgetHfs.setEnabled(True)
         self.actionClose.setEnabled(True)
@@ -203,11 +212,11 @@ class Main(QMainWindow):
         ''' remounts current image to update status infos '''
         p = self.lineEditHfsPath.text()
         if IS_WIN:
-            res = self._cmd('hfs', ['mount', self.loaded_image])
+            res = self._cmd('hfs', ['mount', self._loaded_image])
             self._cmd('hfs', ['cd', p])
         else:
-            res = self._sh('hmount "{}"'.format(self.loaded_image))
-            self._sh('hcd "$(mac {})"'.format(p))
+            res = self._sh('hmount "{}"'.format(self._loaded_image))
+            self._sh('hcd "$(mac \"{}\")"'.format(p))
         lines = res.splitlines()
         self._free_bytes = lines[3].split(' ')[2]
         self._statusInfo.setText(
@@ -219,28 +228,43 @@ class Main(QMainWindow):
             )
         )
 
-    def _del_recursive(self, hfs_dir):
-        ''' delete all files in dir '''
+    def _handle_reserved_host(self, fn):
+        return fn.replace('\\r', '{CR}')
+
+    def _handle_reserved_hfs(self, fn):
+        return fn.replace('{CR}', '\r').replace('{SL}', '/')
+
+    def _del(self, fn):
+        ''' delete a file '''
+        fn = self._handle_reserved_hfs(fn)
         if IS_WIN:
-            self._cmd('hfs', ['del', hfs_dir], True)
-            # now only dirs remain
-            for d in self._cmd('hfs', ['ls', '-1', hfs_dir], True).splitlines():
-                if d:
-                    self._del_recursive(hfs_dir+':'+d)
-            # removes an *empty* HFS directory
-            self._cmd('hfs', ['rmdir', hfs_dir], True)
+            self._cmd('hfs', ['del', fn])
         else:
-            self._sh('hdel "$(mac {})" 2>/dev/null'.format(hfs_dir))
+            self._sh('hdel "$(mac \"{}\")"'.format(fn))
+
+    def _del_recursive(self, hfs_item):
+        ''' delete all files in dir '''
+        hfs_item = self._handle_reserved_hfs(hfs_item)
+        if IS_WIN:
+            self._cmd('hfs', ['del', hfs_item], True)
             # now only dirs remain
-            for d in self._sh('hls -1 "$(mac {})" 2>/dev/null'.format(hfs_dir)).splitlines():
+            for d in self._cmd('hfs', ['ls', '-1a', hfs_item], True).split('\n'):
                 if d:
-                    self._del_recursive(hfs_dir+':'+d)
+                    self._del_recursive(hfs_item+':'+d)
             # removes an *empty* HFS directory
-            self._sh('hrmdir "$(mac {})" 2>/dev/null'.format(hfs_dir))
+            self._cmd('hfs', ['rmdir', hfs_item], True)
+        else:
+            self._sh('hdel "$(mac \"{}\")"'.format(hfs_item), True)
+            # now only dirs remain
+            for d in self._sh('hls -1a "$(mac \"{}\")"'.format(hfs_item), True).split('\n'):
+                if d:
+                    self._del_recursive(hfs_item+':'+d)
+            # removes an *empty* HFS directory
+            self._sh('hrmdir "$(mac \"{}\")"'.format(hfs_item), True)
 
     def _copy_in(self, mode, fn_src):
         ''' copy to image '''
-        fn_dest = os.path.basename(fn_src)
+        fn_dest = self._handle_reserved_hfs(os.path.basename(fn_src))
         if mode == '-m' and fn_dest.endswith('.bin'):
             fn_dest = fn_dest[:-4]
         elif mode == '-b' and fn_dest.endswith('.hqx'):
@@ -248,7 +272,7 @@ class Main(QMainWindow):
         if IS_WIN:
             self._cmd('hfs', ['copy', mode, fn_src, ':'+fn_dest])
         else:
-            self._sh('hcopy {} "{}" "$(mac {})"'.format(mode, fn_src, ':'+fn_dest))
+            self._sh('hcopy {} "{}" "$(mac \"{}\")"'.format(mode, fn_src, ':'+fn_dest))
 
     def _copy_in_recursive(self, mode, host_root, f, hfs_root = ':'):
         ''' recursively copy directory to image'''
@@ -257,14 +281,15 @@ class Main(QMainWindow):
             if IS_WIN:
                 self._cmd('hfs', ['mkdir', hfs_root+f])
             else:
-                self._sh('hmkdir "$(mac {})"'.format(hfs_root+f))
+                self._sh('hmkdir "$(mac \"{}\")"'.format(hfs_root+f))
             for f2 in os.listdir(p):
                 self._copy_in_recursive(mode, p, f2, hfs_root+f+':')
         else:
+            f = self._handle_reserved_hfs(os.path.basename(f))
             if IS_WIN:
                 self._cmd('hfs', ['copy', mode, os.path.realpath(p), hfs_root+f])
             else:
-                self._sh('hcopy {} "{}" "$(mac {})"'.format(mode, os.path.realpath(p), hfs_root+f))
+                self._sh('hcopy {} "{}" "$(mac \"{}\")"'.format(mode, os.path.realpath(p), hfs_root+f))
 
     def _copy_in_unstuff(self, fn_src):
         ''' unstuff to tmp, then copy to image (win only) '''
@@ -299,26 +324,29 @@ class Main(QMainWindow):
             fn_dest += '.bin'
         elif mode == '-b':
             fn_dest += '.hqx'
+        fn_src = self._handle_reserved_hfs(fn_src)
         if IS_WIN:
             self._cmd('hfs', ['copy', mode, ':'+fn_src, fn_dest])
         else:
-            self._sh('hcopy {} "$(mac {})" "{}"'.format(mode, ':'+fn_src, fn_dest))
+            self._sh('hcopy {} "$(mac \"{}\")" "{}"'.format(mode, ':'+fn_src, fn_dest))
 
     def _copy_out_recursive(self, mode, hfs_item, host_root, host_path, is_file):
         ''' recursively copy directory from image'''
+        host_path = self._handle_reserved_host(host_path)
         p_host = os.path.realpath(os.path.join(host_root, host_path))
+        hfs_item = self._handle_reserved_hfs(hfs_item)
         if is_file:
             if IS_WIN:
                 self._cmd('hfs', ['copy', mode, hfs_item, p_host])
             else:
-                self._sh('hcopy {} "$(mac {})" "{}"'.format(mode, hfs_item, p_host))
+                self._sh('hcopy {} "$(mac \"{}\")" "{}"'.format(mode, hfs_item, p_host))
         else:
             if IS_WIN:
                 res = self._cmd('hfs', ['ls', '-alU', hfs_item])
             else:
-                res = self._sh('hls -alU "$(mac {})"'.format(hfs_item))
+                res = self._sh('hls -alU "$(mac \"{}\")"'.format(hfs_item))
             for l in res.splitlines():
-                fn = l[46:]
+                fn = l[46:].replace('/', '{SL}')
                 if l[0] == 'd':
                     d = os.path.join(p_host, fn)
                     if not os.path.isdir(d):
@@ -341,7 +369,7 @@ class Main(QMainWindow):
 
     def dropEvent(self, e):
         e.accept()
-        if self.loaded_image:
+        if self._loaded_image:
             for u in e.mimeData().urls():
                 fn = os.path.normpath(u.toLocalFile())
                 if os.path.isdir(fn):
@@ -350,10 +378,11 @@ class Main(QMainWindow):
                     mode = COPY_MODES[self.dialog_copy_mode.comboBoxMode.currentIndex()]
                     host_root, f = os.path.split(fn)
                     self._copy_in_recursive(mode, host_root, f)
+                    self.statusbar.showMessage('Done.', 5000)
                 else:
                     ext = fn.rsplit('.', 2)[-1]
                     if ext in ['hfs', 'dsk', 'img']:
-                        if fn == self.loaded_image:
+                        if fn == self._loaded_image:
                             return  # ignore
                         mb = QMessageBox(
                                 QMessageBox.Question,
@@ -442,7 +471,7 @@ class Main(QMainWindow):
         else:
             self._sh('dd if=/dev/zero of="{}" bs=1048576 count={}'.format(fn, mb))
             if label:
-                self._sh('hformat -l "$(mac {})" "{}"'.format(label, fn))
+                self._sh('hformat -l "$(mac \"{}\")" "{}"'.format(label, fn))
             else:
                 self._sh('hformat "{}"'.format(fn))
         self._load_image(fn)
@@ -456,12 +485,12 @@ class Main(QMainWindow):
         self._load_image(fn)
 
     def slot_close_image(self):
-        if self.loaded_image:
+        if self._loaded_image:
             if IS_WIN:
                 self._cmd('hfs', ['umount'])
             else:
                 self._sh('humount')
-            self.loaded_image = None
+            self._loaded_image = None
             self.treeWidgetHfs.clear()
             self.lineEditHfsPath.setText('')
 
@@ -480,7 +509,7 @@ class Main(QMainWindow):
         QMessageBox.about(self, 'About ' + APP_NAME, msg)
 
     def slot_stderr(self):
-        print('[STDERR]', self._proc.readAllStandardError().data().decode('macroman'))
+        print('[STDERR]', self._proc.readAllStandardError().data())
 
     def slot_context_menu_requested(self):
         m = QMenu()
@@ -513,11 +542,13 @@ class Main(QMainWindow):
 
     def slot_extract(self):
         treeItem = self.treeWidgetHfs.currentItem()
-        fn_src = treeItem.text(0)
+        fn_src = treeItem.text(0).replace('/', '{SL}')
         if treeItem.type() == TYPE_FILE:
-            fn_dest,_ = QFileDialog.getSaveFileName(self, 'Extract File as...', fn_src)
+            fn_dest,_ = QFileDialog.getSaveFileName(self, 'Extract File as...',
+                    os.path.join(self._last_dir, fn_src))
             if not fn_dest:
                 return
+            self._last_dir = os.path.dirname(fn_dest)
             if self.dialog_copy_mode.exec() != QDialog.Accepted:
                 return
             mode = COPY_MODES[self.dialog_copy_mode.comboBoxMode.currentIndex()]
@@ -533,19 +564,18 @@ class Main(QMainWindow):
             if not os.path.isdir(dir_dest):
                 os.mkdir(dir_dest)
             self._copy_out_recursive(mode, ':'+fn_src, dir_dest, '', False)
+            self.statusbar.showMessage('Done.', 5000)
 
     def slot_delete(self):
         treeItem = self.treeWidgetHfs.currentItem()
-        fn = treeItem.text(0)
+        fn = treeItem.text(0).replace('/', '{SL}')
         if QMessageBox.question(self, 'Delete', 'Really delete this item?') != QMessageBox.Yes:
             return
         if treeItem.type() == TYPE_FILE:
-            if IS_WIN:
-                self._cmd('hfs', ['del', fn])
-            else:
-                self._sh('hdel "$(mac {})"'.format(fn))
+            self._del(fn)
         else:
             self._del_recursive(':'+fn)
+            self.statusbar.showMessage('Done.', 5000)
         self._show_listing()
         self._remount()
 
@@ -555,10 +585,12 @@ class Main(QMainWindow):
         fn_new, ok = QInputDialog.getText(self, 'Rename File/Folder', 'New Name:', QLineEdit.Normal, fn)
         if not fn_new or fn == fn_new:
             return
+        fn = fn.replace('{CR}', '\\\r')
+        fn_new = fn_new.replace('{CR}', '\r')
         if IS_WIN:
             self._cmd('hfs', ['rename', fn, fn_new])
         else:
-            self._sh('hrename "$(mac {})" "$(mac {})"'.format(fn, fn_new))
+            self._sh('hrename "$(mac \"{}\")" "$(mac \"{}\")"'.format(fn, fn_new))
         self._show_listing()
 
     def slot_rename_volume(self):
@@ -569,8 +601,8 @@ class Main(QMainWindow):
         if IS_WIN:
             self._cmd('hfs', ['rename', vol+':', vol_new[:27]+':'])
         else:
-            self._sh('hrename "$(mac {})" "$(mac {})"'.format(vol+':', vol_new[:27]+':'))
-        self._load_image(self.loaded_image)  # remount
+            self._sh('hrename "$(mac \"{}\")" "$(mac \"{}\")"'.format(vol+':', vol_new[:27]+':'))
+        self._load_image(self._loaded_image)  # remount
 
     def slot_mkdir(self):
         fn, ok = QInputDialog.getText(self, 'New Folder', 'Folder Name:')
@@ -579,7 +611,7 @@ class Main(QMainWindow):
         if IS_WIN:
             self._cmd('hfs', ['mkdir', fn])
         else:
-            self._sh('hmkdir "$(mac {})"'.format(fn))
+            self._sh('hmkdir "$(mac \"{}\")"'.format(fn))
         self._show_listing()
 
     def slot_fill_zero(self):
@@ -596,10 +628,10 @@ class Main(QMainWindow):
             self._sh('dd if=/dev/zero of="{}" bs={} count=1'.format(zero_dat, self._free_bytes))
             self._sh('hcopy -r "{}" :__zero__.dat'.format(zero_dat))
             self._sh('hdel :__zero__.dat')
-            self._sh('hcd "$(mac {})"'.format(p))
+            self._sh('hcd "$(mac \"{}\")"'.format(p))
         if os.path.isfile(zero_dat):
             os.remove(zero_dat)
-        self.statusbar.showMessage('Done.')
+        self.statusbar.showMessage('Done.', 5000)
 
     def slot_item_double_clicked(self, treeItem, col):
         if treeItem.type() == TYPE_FOLDER:
@@ -607,7 +639,7 @@ class Main(QMainWindow):
             if IS_WIN:
                 self._cmd('hfs', ['cd', fn])
             else:
-                self._sh('hcd "$(mac {})"'.format(fn))
+                self._sh('hcd "$(mac \"{}\")"'.format(fn))
             self.lineEditHfsPath.setText(self._cmd('hfs', ['pwd']) if IS_WIN else self._sh('hpwd'))
             self._show_listing()
             self.toolButtonUp.setEnabled(True)
@@ -621,7 +653,7 @@ class Main(QMainWindow):
             if IS_WIN:
                 self._cmd('hfs', ['cd', p])
             else:
-                self._sh('hcd "$(mac {})"'.format(p))
+                self._sh('hcd "$(mac \"{}\")"'.format(p))
             self.lineEditHfsPath.setText(self._cmd('hfs', ['pwd']) if IS_WIN else self._sh('hpwd'))
             self._show_listing()
             if len(parts) < 3:

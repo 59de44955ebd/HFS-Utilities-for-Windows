@@ -76,9 +76,6 @@ typedef struct _queueent_ {
 	void (*free)(struct _queueent_ *);
 } queueent;
 
-//extern char *optarg;
-//extern int optind;
-
 /*
  * NAME:	usage()
  * DESCRIPTION:	display usage message
@@ -233,8 +230,7 @@ int outpath(dstring *str, queueent *ent, int flags)
 
 	dstr_shrink(str, 0);
 
-	if ((flags & HLS_QUOTE) &&
-			dstr_append(str, "\"", 1) == -1)
+	if ((flags & HLS_QUOTE) && dstr_append(str, "\"", 1) == -1)
 		return -1;
 
 	if (flags & (HLS_ESCAPE | HLS_QUOTE | HLS_QMARK_CTRL))
@@ -250,52 +246,54 @@ int outpath(dstring *str, queueent *ent, int flags)
 			{
 				switch (*ptr)
 				{
-					case '\\':
-						add = "\\\\";
-						break;
+				case '\\':
+					add = "\\\\";
+					break;
 
-					case '\n':
-						add = "\\n";
-						break;
+				case '\n':
+					add = "\\n";
+					break;
 
-					case '\b':
-						add = "\\b";
-						break;
+				case '\b':
+					add = "\\b";
+					break;
 
-					case '\r':
-						add = "\\r";
-						break;
+				case '\r':
+					add = "\\r";
+					//add = "\\n";
+					//add = "X";
+					break;
 
-					case '\t':
-						add = "\\t";
-						break;
+				case '\t':
+					add = "\\t";
+					break;
 
-					case '\f':
-						add = "\\f";
-						break;
+				case '\f':
+					add = "\\f";
+					break;
 
-					case ' ':
-						add = "\\ ";
-						break;
+				case ' ':
+					add = "\\ ";
+					break;
 
-					case '\"':
-						add = "\\\"";
-						break;
+				case '\"':
+					add = "\\\"";
+					break;
 
-					default:
-						if (isgraph(*ptr))
-							{
-								sprintf(buf, "%c", *ptr);
-								add = buf;
-							}
-						else
-							{
-								sprintf(buf, "\\%03o", (unsigned char) *ptr);
-								add = buf;
-							}
+				default:
+					if (isgraph(*ptr))
+					{
+						sprintf(buf, "%c", *ptr);
+						add = buf;
+					}
+					else
+					{
+						sprintf(buf, "\\%03o", (unsigned char) *ptr);
+						add = buf;
 					}
 				}
-				else	/* ! (flags & HLS_ESCAPE) */
+			}
+			else	/* ! (flags & HLS_ESCAPE) */
 			{
 				if (isprint(*ptr) || ! (flags & HLS_QMARK_CTRL))
 				{
@@ -319,8 +317,7 @@ int outpath(dstring *str, queueent *ent, int flags)
 				return -1;
 		}
 
-		if ((flags & HLS_QUOTE) &&
-				dstr_append(str, "\"", 1) == -1)
+		if ((flags & HLS_QUOTE) && dstr_append(str, "\"", 1) == -1)
 			return -1;
 
 		if (flags & HLS_INDICATOR)
@@ -346,8 +343,7 @@ int outpath(dstring *str, queueent *ent, int flags)
 static
 int misclen(int flags)
 {
-	return ((flags & HLS_CATIDS) ? 8 : 0) +
-				 ((flags & HLS_SIZE)	 ? 5 : 0);
+	return ((flags & HLS_CATIDS) ? 8 : 0) + ((flags & HLS_SIZE)	 ? 5 : 0);
 }
 
 /*
@@ -372,8 +368,7 @@ void showmisc(hfsdirent *ent, int flags)
  * DESCRIPTION:	output a list of files in long format
  */
 static
-void show_long(int sz, queueent *ents, char **strs,
-				 int flags, int options, int width)
+void show_long(int sz, queueent *ents, char **strs, int flags, int options, int width)
 {
 	int i;
 	time_t now;
@@ -391,22 +386,21 @@ void show_long(int sz, queueent *ents, char **strs,
 
 		switch (options & T_MASK)
 		{
-			case T_MOD:
-				when = ent->mddate;
-				break;
+		case T_MOD:
+			when = ent->mddate;
+			break;
 
-			case T_CREATE:
-				when = ent->crdate;
-				break;
+		case T_CREATE:
+			when = ent->crdate;
+			break;
 
-			default:
-				abort();
+		default:
+			abort();
 		}
 
 		strcpy(timebuf, ctime(&when));
 
-		if (now > when + 6L * 30L * 24L * 60L * 60L ||
-				now < when - 60L * 60L)
+		if (now > when + 6L * 30L * 24L * 60L * 60L || now < when - 60L * 60L)
 			strcpy(timebuf + 11, timebuf + 19);
 
 		timebuf[16] = 0;
@@ -414,6 +408,7 @@ void show_long(int sz, queueent *ents, char **strs,
 		showmisc(ent, flags);
 
 		wstr = macRomanToUtf16(strs[i]);
+
 		if (wstr != 0)
 		{
 			if (ent->flags & HFS_ISDIR)
@@ -438,8 +433,7 @@ void show_long(int sz, queueent *ents, char **strs,
  * DESCRIPTION:	output a list of files in single-column format
  */
 static
-void show_one(int sz, queueent *ents, char **strs,
-				int flags, int options, int width)
+void show_one(int sz, queueent *ents, char **strs, int flags, int options, int width)
 {
 	int i;
 	wchar_t *wstr = 0;
@@ -461,8 +455,7 @@ void show_one(int sz, queueent *ents, char **strs,
  * DESCRIPTION:	output a list of files in vertical-column format
  */
 static
-void show_many(int sz, queueent *ents, char **strs,
-				 int flags, int options, int width)
+void show_many(int sz, queueent *ents, char **strs, int flags, int options, int width)
 {
 	int i, len, misc, maxlen = 0, rows, cols, row;
 	wchar_t *wstr = 0;
@@ -516,8 +509,7 @@ void show_many(int sz, queueent *ents, char **strs,
  * DESCRIPTION:	output a list of files in horizontal-column format
  */
 static
-void show_horiz(int sz, queueent *ents, char **strs,
-		int flags, int options, int width)
+void show_horiz(int sz, queueent *ents, char **strs, int flags, int options, int width)
 {
 	int i, len, misc, maxlen = 0, cols;
 	wchar_t *wstr = 0;
@@ -568,8 +560,7 @@ void show_horiz(int sz, queueent *ents, char **strs,
  * DESCRIPTION:	output a list of files in comma-delimited format
  */
 static
-void show_commas(int sz, queueent *ents, char **strs,
-		 int flags, int options, int width)
+void show_commas(int sz, queueent *ents, char **strs, int flags, int options, int width)
 {
 	int i, pos = 0;
 	wchar_t *wstr = 0;
@@ -649,28 +640,28 @@ int showfiles(darray *files, int flags, int options, int width)
 
 	switch (options & F_MASK)
 	{
-		case F_LONG:
-			show = show_long;
-			break;
+	case F_LONG:
+		show = show_long;
+		break;
 
-		case F_ONE:
-			show = show_one;
-			break;
+	case F_ONE:
+		show = show_one;
+		break;
 
-		case F_MANY:
-			show = show_many;
-			break;
+	case F_MANY:
+		show = show_many;
+		break;
 
-		case F_HORIZ:
-			show = show_horiz;
-			break;
+	case F_HORIZ:
+		show = show_horiz;
+		break;
 
-		case F_COMMAS:
-			show = show_commas;
-			break;
+	case F_COMMAS:
+		show = show_commas;
+		break;
 
-		default:
-			abort();
+	default:
+		abort();
 	}
 
 	show(sz, ents, strs, flags, options, width);
@@ -685,8 +676,7 @@ int showfiles(darray *files, int flags, int options, int width)
  * DESCRIPTION:	sort and display results
  */
 static
-int process(hfsvol *vol, darray *dirs, darray *files,
-			int flags, int options, int width)
+int process(hfsvol *vol, darray *dirs, darray *files, int flags, int options, int width)
 {
 	int i, dsz, fsz;
 	queueent *ents;
@@ -896,104 +886,104 @@ int hls_main(int argc, wchar_t *argv[])
 
 		switch (opt)
 		{
-			case '?':
-				return usage();
+		case '?':
+			return usage();
 
-			case '1':
-				options = (options & ~F_MASK) | F_ONE;
-				break;
+		case '1':
+			options = (options & ~F_MASK) | F_ONE;
+			break;
 
-			case 'a':
-				flags |= HLS_ALL_FILES;
-				break;
+		case 'a':
+			flags |= HLS_ALL_FILES;
+			break;
 
-			case 'b':
-				flags |= HLS_ESCAPE;
-				flags &= ~HLS_QMARK_CTRL;
-				break;
+		case 'b':
+			flags |= HLS_ESCAPE;
+			flags &= ~HLS_QMARK_CTRL;
+			break;
 
-			case 'c':
-				options = (options & ~(T_MASK | S_MASK)) | T_CREATE | S_TIME;
-				break;
+		case 'c':
+			options = (options & ~(T_MASK | S_MASK)) | T_CREATE | S_TIME;
+			break;
 
-			case 'd':
-				flags |= HLS_IMMEDIATE_DIRS;
-				break;
+		case 'd':
+			flags |= HLS_IMMEDIATE_DIRS;
+			break;
 
-			case 'f':
-				flags |= HLS_ALL_FILES;
-				flags &= ~HLS_SIZE;
-				options &= ~S_MASK;
-				if ((options & F_MASK) == F_LONG)
-					options = (options & ~F_MASK) |
-						(isatty(STDOUT_FILENO) ? F_MANY : F_ONE);
-				break;
+		case 'f':
+			flags |= HLS_ALL_FILES;
+			flags &= ~HLS_SIZE;
+			options &= ~S_MASK;
+			if ((options & F_MASK) == F_LONG)
+				options = (options & ~F_MASK) |
+					(isatty(STDOUT_FILENO) ? F_MANY : F_ONE);
+			break;
 
-			case 'i':
-				flags |= HLS_CATIDS;
-				break;
+		case 'i':
+			flags |= HLS_CATIDS;
+			break;
 
-			case 'l':
-				options = (options & ~F_MASK) | F_LONG;
-				break;
+		case 'l':
+			options = (options & ~F_MASK) | F_LONG;
+			break;
 
-			case 'm':
-				options = (options & ~F_MASK) | F_COMMAS;
-				break;
+		case 'm':
+			options = (options & ~F_MASK) | F_COMMAS;
+			break;
 
-			case 'q':
-				flags |= HLS_QMARK_CTRL;
-				flags &= ~HLS_ESCAPE;
-				break;
+		case 'q':
+			flags |= HLS_QMARK_CTRL;
+			flags &= ~HLS_ESCAPE;
+			break;
 
-			case 'r':
-				flags |= HLS_REVERSE;
-				break;
+		case 'r':
+			flags |= HLS_REVERSE;
+			break;
 
-			case 's':
-				flags |= HLS_SIZE;
-				break;
+		case 's':
+			flags |= HLS_SIZE;
+			break;
 
-			case 't':
-				options = (options & ~S_MASK) | S_TIME;
-				break;
+		case 't':
+			options = (options & ~S_MASK) | S_TIME;
+			break;
 
-			case 'x':
-				options = (options & ~F_MASK) | F_HORIZ;
-				break;
+		case 'x':
+			options = (options & ~F_MASK) | F_HORIZ;
+			break;
 
-			case 'w':
-				width = _wtoi(optarg);
-				break;
+		case 'w':
+			width = _wtoi(optarg);
+			break;
 
-			case 'C':
-				options = (options & ~F_MASK) | F_MANY;
-				break;
+		case 'C':
+			options = (options & ~F_MASK) | F_MANY;
+			break;
 
-			case 'F':
-				flags |= HLS_INDICATOR;
-				break;
+		case 'F':
+			flags |= HLS_INDICATOR;
+			break;
 
-			case 'N':
-				flags &= ~(HLS_ESCAPE | HLS_QMARK_CTRL);
-				break;
+		case 'N':
+			flags &= ~(HLS_ESCAPE | HLS_QMARK_CTRL);
+			break;
 
-			case 'Q':
-				flags |= HLS_QUOTE | HLS_ESCAPE;
-				flags &= ~HLS_QMARK_CTRL;
-				break;
+		case 'Q':
+			flags |= HLS_QUOTE | HLS_ESCAPE;
+			flags &= ~HLS_QMARK_CTRL;
+			break;
 
-			case 'R':
-				flags |= HLS_RECURSIVE;
-				break;
+		case 'R':
+			flags |= HLS_RECURSIVE;
+			break;
 
-			case 'S':
-				options = (options & ~S_MASK) | S_SIZE;
-				break;
+		case 'S':
+			options = (options & ~S_MASK) | S_SIZE;
+			break;
 
-			case 'U':
-				options &= ~S_MASK;
-				break;
+		case 'U':
+			options &= ~S_MASK;
+			break;
 		}
 	}
 
