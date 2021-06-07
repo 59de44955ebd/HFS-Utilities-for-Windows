@@ -229,10 +229,10 @@ class Main(QMainWindow):
         )
 
     def _handle_reserved_host(self, fn):
-        return fn.replace('\\r', '{CR}')
+        return fn.replace('\\r', '{CR}').replace('"', '{QU}')
 
     def _handle_reserved_hfs(self, fn):
-        return fn.replace('{CR}', '\r').replace('{SL}', '/')
+        return fn.replace('{CR}', '\r').replace('{SL}', '/').replace('{QU}', '"')
 
     def _del(self, fn):
         ''' delete a file '''
@@ -469,7 +469,7 @@ class Main(QMainWindow):
             else:
                 self._cmd('hfs', ['format', fn])
         else:
-            self._sh('dd if=/dev/zero of="{}" bs=1048576 count={}'.format(fn, mb))
+            self._sh('dd if=/dev/zero of="{}" bs=1048576 count={}'.format(fn, mb), True)
             if label:
                 self._sh('hformat -l "$(mac \"{}\")" "{}"'.format(label, fn))
             else:
@@ -542,7 +542,7 @@ class Main(QMainWindow):
 
     def slot_extract(self):
         treeItem = self.treeWidgetHfs.currentItem()
-        fn_src = treeItem.text(0).replace('/', '{SL}')
+        fn_src = treeItem.text(0).replace('/', '{SL}').replace('"', '{QU}')
         if treeItem.type() == TYPE_FILE:
             fn_dest,_ = QFileDialog.getSaveFileName(self, 'Extract File as...',
                     os.path.join(self._last_dir, fn_src))

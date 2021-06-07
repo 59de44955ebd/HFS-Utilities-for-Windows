@@ -83,10 +83,10 @@ int hcwd_init(void)
 	wcscpy(path, home);
 	wcscat(path, L"\\" STATEFNAME);
 
-	statef = _wfopen(path, L"r+");
+	statef = _wfopen(path, L"r+, ccs=UTF-8");
 	if (statef == 0 && errno == ENOENT)
 	{
-		statef = _wfopen(path, L"w+");
+		statef = _wfopen(path, L"w+, ccs=UTF-8");
 	}
 
 	free(path);
